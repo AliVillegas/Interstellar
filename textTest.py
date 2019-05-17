@@ -1,8 +1,3 @@
-
-'''
-- Firebase each 10seconds
-- 
-'''
 from firebase import firebase
 import random
 import os
@@ -25,7 +20,7 @@ print(coordinates)
 averageXaccel = 0.0
 averageYaccel = 0.0
 averageZaccel = 0.0
-spanAcceleration = 1	#30 yielded good results
+spanAcceleration = 2#30 yielded good results
 earthGAccel = -0.96
 averageZgyr = 0.0
 #x=80,y=100,w= 1000, h = 1000, background=(0,0,0,1),use_pygame=True,frames_per_second = 30
@@ -45,7 +40,6 @@ newCoordinates = {'x':1, 'y':1, 'z':1}
 flashGreen = "./FlashGreen"
 flashRed = "./FlashRed"
 pressure = './ReadPressure'
-sensorDataText = "./PrintSensorData"
 temp = './ReadTemperature'
 CAMERA = pi3d.Camera.instance()
 CAMERA = pi3d.Camera.instance()
@@ -53,31 +47,19 @@ CAMERA = pi3d.Camera.instance()
 #this block added for fast text changing
 import time
 CAMERA2D = pi3d.Camera(is_3d=False)
-
 myfont = pi3d.Font('FreeSans.ttf', codepoints='0123456789. FPStm:')
-myfont2 = pi3d.Font('FreeSans.ttf', codepoints='abcdefghijkmnlopkrstuvwxyzABCDEFGHIJKMNLOPQRSTUVWXYZ: ,.1234567890 ')
 myfont.blend = True
-tstring = "{:.0f}FPS tm:{:.1f} "
+tstring = "{:.0f}FPS tm:{:.1f} ".format(60,time.time())
 lasttm = time.time()
 tdel = 0.23
 fcount = 0
-'''
 mystring = pi3d.String(camera=CAMERA2D, font=myfont, is_3d=False, string=tstring)
 mystring.set_shader(flatsh)
 (lt, bm, ft, rt, tp, bk) = mystring.get_bounds()
 xpos = (-DISPLAY.width + rt - lt) / 2.0
 ypos = (-DISPLAY.height + tp - bm) / 2.0
-mystring.position(xpos + 100, ypos + 200, 1.0)
-mystring.draw() 
-'''
-pText = pi3d.String(camera=CAMERA2D, font=myfont2, is_3d=False, string='Pressure: 00.000 hPA,Temperature: 00.00 C')
-pText.set_shader(flatsh)
-(lt, bm, ft, rt, tp, bk) = pText.get_bounds()
-xpos = (-DISPLAY.width + rt - lt) / 2.0
-ypos = (-DISPLAY.height + tp - bm) / 2.0
-pText.position(xpos + 10, ypos + 10, 1.0)
-pText.draw()
-# NB has to be drawn before quick_change() is called as buffer needs to exist
+mystring.position(xpos, ypos, 1.0)
+mystring.draw() # NB has to be drawn before quick_change() is called as buffer needs to exist
 ####################
 '''
 CAMERA2D = pi3d.Camera(is_3d=False)
@@ -95,7 +77,6 @@ mystring.draw()
 '''
 #os.popen(flashRed)
 rotCounter = 0
-
 while DISPLAY.loop_running():
 	#mystring.draw()
 
@@ -108,13 +89,11 @@ while DISPLAY.loop_running():
 		tm = time.time()
 		fcount += 1
 		if tm > (lasttm + tdel):
-			#newtstring = "{:.0f}FPS tm:{:.1f}".format(fcount / (tm - lasttm), tm)
-			if x == 0:
-				pText.quick_change(os.popen(sensorDataText).read())
+			newtstring = "{:.0f}FPS tm:{:.1f}".format(fcount / (tm - lasttm), tm)
+			mystring.quick_change(os.popen(pressure))
 			lasttm = tm
 			fcount = 0	
-		#mystring.draw()
-		pText.draw()
+		mystring.draw()
 		raw = sense.get_accelerometer_raw()
 		averageXaccel += round(raw["x"],3)
 		averageYaccel += round(raw["y"],3)
@@ -198,11 +177,11 @@ firebase = firebase.FirebaseApplication('https://interstellar-d796a.firebaseio.c
 pressureData = os.popen(pressure).read()
 tempData = os.popen(temp).read()
 
-#respuesta = firebase.patch('/Ship/SensorData', {'Atmos Pressure (hPA)': pressureData, 'Temperature (C)': tempData})
-#print(respuesta)
+respuesta = firebase.patch('/Ship/SensorData', {'Atmos Pressure (hPA)': pressureData, 'Temperature (C)': tempData})
+print(respuesta)
 print("\n")
-#salida = firebase.get('/Ship/SensorData','')
-#rint("\n")
-print(pressureData)
+salida = firebase.get('/Ship/SensorData','')
+print("\n")
+print(salida)
 
 
