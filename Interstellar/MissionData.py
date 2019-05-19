@@ -25,10 +25,10 @@ class MissionData:
    lifes = 0
    
    def __init__(self, simulationCounter, timeStampId, avgAccelx, avgAccely, avgAccelz, lifes, cabinStatus, leftWingStatus, rightWingStatus):
-      self.pathLocation = self.pathLocation + str(simulationCounter) + '/Ship Time Logs/' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(timeStampId)))
+      self.pathLocation = self.pathLocation + str(simulationCounter) + '/Mission Report/' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(timeStampId)))
       self.pathLocationSensors = self.pathLocation + '/Sensors'
       self.pathLocationAccel = self.pathLocation + '/Sensors/Acceleration'
-      self.pathLocationReport = self.pathLocation + '/Mission Report'
+      self.pathLocationReport = self.pathLocation + '/Ship Status'
       self.averageXaccel = avgAccelx
       self.averageYaccel = avgAccely
       self.averageZaccel = avgAccelz
@@ -42,7 +42,8 @@ class MissionData:
      pressure = './ReadPressure'
      sensorDataText = "./PrintSensorData"
      temp = './ReadTemperature'
-     log = self.firebase.patch(self.pathLocationSensors, {'Atmos Pressure (hPA)': os.popen(pressure).read(), 'Temperature (C)': os.popen(temp).read()})
+     humidity = './ReadHumidity'
+     log = self.firebase.patch(self.pathLocationSensors, {'Atmos Pressure (hPA)': os.popen(pressure).read(), 'Temperature (C)': os.popen(temp).read(), 'Humidity HRn (%)': os.popen(humidity).read()})
      log = self.firebase.patch(self.pathLocationAccel, {'x': self.averageXaccel, 'y': self.averageYaccel, 'z': self.averageZaccel})
      log = self.firebase.patch(self.pathLocationReport, {'Lifes': self.lifes, 'Cabin Status': self.cabin, 'Right Wing Status': self.rightWing, 'Left Wing Status': self.leftWing})
      

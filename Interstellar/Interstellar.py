@@ -57,13 +57,14 @@ spaceRocket = pi3d.Model(file_string='ship.obj', name='rocket', z=500.0)
 #spaceRocket.set_shader(flatsh)
 background = pi3d.Plane(w=1920, h=1080, name="stars", z=800)
 escapeSimulation = pi3d.Keyboard()
-newCoordinates = {'x':1, 'y':1, 'z':1}
+newCoordinates = {'x':4, 'y':0, 'z':1}
 
 flashGreen = "./FlashGreen"
 flashRed = "./FlashRed"
 pressure = './ReadPressure'
 sensorDataText = "./PrintSensorData"
 temp = './ReadTemperature'
+humidity = './PrintHumidityData'
 timeStamps = './TimeStamps'
 health8 = './Health8'
 health7 = './Health7'
@@ -100,18 +101,22 @@ mystring.draw()
 '''
 
 pText = pi3d.String(camera=CAMERA2D, font=myfont2, is_3d=False, string='Pressure: 00.000 hPA,Temp: 00.00 C Life:5000')
+humidityText = pi3d.String(camera=CAMERA2D, font=myfont2, is_3d=False, string='Humidity: 21.50 percent rHn')
 gameOverText = pi3d.String(camera=CAMERA2D, font=myfont2, is_3d=False, string='Thanks for using this simulation')
 firebaseText = pi3d.String(camera=CAMERA2D, font=myfont2, is_3d=False, string='Waiting for instructions from firebase HQ')
 pText.set_shader(flatsh)
+humidityText.set_shader(flatsh)
 firebaseText.set_shader(flatsh)
 gameOverText.set_shader(flatsh)
 (lt, bm, ft, rt, tp, bk) = pText.get_bounds()
 xpos = (-DISPLAY.width + rt - lt) / 2.0
 ypos = (-DISPLAY.height + tp - bm) / 2.0
-pText.position(xpos + 10, ypos + 10, 1.0)
+pText.position(xpos, ypos + 850, 1.0)
 gameOverText.position(xpos+100,ypos+300,1)
+humidityText.position(xpos-173,ypos+900,1)
 firebaseText.position(xpos+100,ypos+300,1)
 pText.draw()
+humidityText.draw()
 gameOverText.draw()
 firebaseText.draw()
 # NB has to be drawn before quick_change() is called as buffer needs to exist
@@ -267,10 +272,12 @@ while DISPLAY.loop_running():
 				if x == 0:
 					sensorsText = os.popen(sensorDataText).read() + " Life:" + str(lifeHits)
 					pText.quick_change(sensorsText)
+					humidityText.quick_change(os.popen(humidity).read())
 				lasttm = tm
 				fcount = 0	
 			#mystring.draw()
 			pText.draw()
+			humidityText.draw()
 			raw = sense.get_accelerometer_raw()
 			averageXaccel += round(raw["x"],3)
 			averageYaccel += round(raw["y"],3)
@@ -503,6 +510,7 @@ while DISPLAY.loop_running():
 		print("UPLOADING SIMULATION REPORT TO FIREBASE PLEASE WAIT...")
 		for mission in firebaseMissionReportLogs:
 			mission.uploadDataToFirebase()
+		os.popen(flashGreen)
 		break
 	
 
