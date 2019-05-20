@@ -27,7 +27,7 @@ class MissionData:
    def __init__(self, simulationCounter, timeStampId, avgAccelx, avgAccely, avgAccelz, lifes, cabinStatus, leftWingStatus, rightWingStatus):
       self.pathLocation = self.pathLocation + str(simulationCounter) + '/Mission Report/' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(timeStampId)))
       self.pathLocationSensors = self.pathLocation + '/Sensors'
-      self.pathLocationAccel = self.pathLocation + '/Sensors/Acceleration'
+      self.pathLocationAccel = self.pathLocation + '/Sensors/Acceleration ms2'
       self.pathLocationReport = self.pathLocation + '/Ship Status'
       self.averageXaccel = avgAccelx
       self.averageYaccel = avgAccely

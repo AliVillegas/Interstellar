@@ -22,7 +22,7 @@ def truncate(number, digits):
     return math.trunc(stepper * number) / stepper
 #To do in C
 sense = SenseHat()
-sense.set_imu_config(False, True, False)
+sense.set_imu_config(True, True, True)
 coordinates =  {"x":0.0,"y":0.0, "z": 0.0}
 print("Original Position:")
 print(coordinates)
@@ -66,6 +66,7 @@ sensorDataText = "./PrintSensorData"
 temp = './ReadTemperature'
 humidity = './PrintHumidityData'
 timeStamps = './TimeStamps'
+readOrientation = './ReadOrientation'
 health8 = './Health8'
 health7 = './Health7'
 health6 = './Health6'
@@ -103,22 +104,29 @@ mystring.draw()
 pText = pi3d.String(camera=CAMERA2D, font=myfont2, is_3d=False, string='Pressure: 00.000 hPA,Temp: 00.00 C Life:5000')
 humidityText = pi3d.String(camera=CAMERA2D, font=myfont2, is_3d=False, string='Humidity: 21.50 percent rHn')
 gameOverText = pi3d.String(camera=CAMERA2D, font=myfont2, is_3d=False, string='Thanks for using this simulation')
+calibrationText = pi3d.String(camera=CAMERA2D, font=myfont2, is_3d=False, string='Rotate The Raspberry pi until the leds flash blue')
 firebaseText = pi3d.String(camera=CAMERA2D, font=myfont2, is_3d=False, string='Waiting for instructions from firebase HQ')
 pText.set_shader(flatsh)
 humidityText.set_shader(flatsh)
 firebaseText.set_shader(flatsh)
 gameOverText.set_shader(flatsh)
+calibrationText.set_shader(flatsh)
 (lt, bm, ft, rt, tp, bk) = pText.get_bounds()
 xpos = (-DISPLAY.width + rt - lt) / 2.0
 ypos = (-DISPLAY.height + tp - bm) / 2.0
-pText.position(xpos, ypos + 850, 1.0)
+#pText.position(xpos, ypos + 850, 1.0)
+#gameOverText.position(xpos+100,ypos+300,1)
+#humidityText.position(xpos-173,ypos+900,1)
+pText.position(xpos, ypos, 1.0)
 gameOverText.position(xpos+100,ypos+300,1)
-humidityText.position(xpos-173,ypos+900,1)
+humidityText.position(xpos-173,ypos+35,1)
+calibrationText.position(xpos+100,ypos+300,1)
 firebaseText.position(xpos+100,ypos+300,1)
 pText.draw()
 humidityText.draw()
 gameOverText.draw()
 firebaseText.draw()
+calibrationText.draw()
 # NB has to be drawn before quick_change() is called as buffer needs to exist
 ####################
 '''
@@ -196,7 +204,49 @@ cabinStatus = 'Fine...'
 os.popen(health8)
 
 firebaseMissionReportLogs = []
+
+#Calibration stage with c
+gyroCounter = 0
+successCalibrationCounter = 0
 while DISPLAY.loop_running():
+	background.draw(shader,[backgroundTexture])
+	calibrationText.draw()
+	gyroCounter += 1
+	if gyroCounter >0:
+		print(sense.orientation['yaw'])
+		print(sense.orientation['roll'])
+		print(sense.orientation['pitch'])
+		yaw1 = (sense.orientation['yaw'] > 0 and sense.orientation['yaw'] < 15) 
+		yaw2 = sense.orientation['yaw'] > 150 and sense.orientation['yaw'] < 361
+		yaw = yaw1 or yaw2
+		roll1 = (sense.orientation['roll'] > 0 and sense.orientation['roll'] < 15) 
+		roll2 = sense.orientation['roll'] > 350 and sense.orientation['roll'] < 361
+		roll = roll1 or roll2
+		pitch1 = (sense.orientation['pitch'] > 0 and sense.orientation['pitch'] < 15) 
+		pitch2 = sense.orientation['pitch'] > 350 and sense.orientation['pitch'] < 361
+		pitch = pitch1 or pitch2
+
+		if yaw and pitch and roll:
+			successCalibrationCounter += 1
+			os.popen(flashGreen)
+			if successCalibrationCounter >3:
+				break
+		else:
+			successCalibrationCounter = 0
+			os.popen(flashRed)
+		gyroCounter = 0
+	k = escapeSimulation.read()
+	print(k)
+	if k == 27 or k== 8 or k == 32 or k ==113:
+		escapeSimulation.close()
+		os.popen(flashGreen)
+		break
+	
+firstTimeRun = True
+while DISPLAY.loop_running():
+	if firstTimeRun:
+		os.popen(health8)
+		firstTimeRun = False
 	if lifeHits != 0:
 		
 		background.draw(shader,[backgroundTexture])
